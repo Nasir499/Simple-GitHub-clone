@@ -7,10 +7,29 @@ import { commitRepo } from './commands/commit.js';
 import { pushRepo } from './commands/push.js';
 import { pullRepo } from './commands/pull.js';
 import { revertRepo } from './commands/revert.js';
+import { loginRepo } from './commands/login.js';
 
 yargs(hideBin(process.argv))
   .scriptName('mygit')
   .usage('$0 <command> [args]')
+  .command(
+    'login <username> <password>',
+    'Log in to your account and save global credentials',
+    (yargs) => {
+      yargs
+        .positional('username', {
+          describe: 'Your username or email',
+          type: 'string'
+        })
+        .positional('password', {
+          describe: 'Your account password',
+          type: 'string'
+        });
+    },
+    (argv) => {
+      loginRepo(argv.username, argv.password);
+    }
+  )
   .command(
     'init [repoId]',
     'Initialize the project with optional Repository ID',
