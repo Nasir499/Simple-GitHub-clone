@@ -1,61 +1,201 @@
-.create-repo-wrapper {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
+.create-repo-page {
+  min-height: 100vh;
+  background-color: var(--bg-canvas, #0d1117);
+  color: var(--text-primary, #f0f6fc);
 }
 
-.create-repo-heading {
-  margin-bottom: 20px;
+.create-repo-wrapper {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.create-repo-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #30363d;
+}
+
+.create-repo-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin: 0 0 6px 0;
+}
+
+.create-repo-subtext {
+  font-size: 14px;
+  color: #8b949e;
+  margin: 0;
 }
 
 .create-repo-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 32px;
+  gap: 24px;
   background-color: #161b22;
   border: 1px solid #30363d;
   border-radius: 10px;
+  padding: 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.visibility-toggle {
+.form-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: rgba(248, 81, 73, 0.15);
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  color: #f85149;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-group {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.required-star {
+  color: #f85149;
+  margin-left: 2px;
+}
+
+.optional-tag {
+  color: #8b949e;
+  font-weight: 400;
+  font-size: 13px;
+  margin-left: 4px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  background-color: #010409;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #f0f6fc;
+  font-size: 14px;
+  font-family: inherit;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.form-input::placeholder {
+  color: #6e7681;
+}
+
+.form-input:hover {
+  border-color: #8b949e;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #8b949e;
+  margin: 2px 0 0 0;
+}
+
+.visibility-section {
   gap: 10px;
 }
 
 .visibility-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .visibility-option {
   display: flex;
-  flex-direction: column;
-  padding: 12px 16px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background-color: #0d1117;
   border: 1px solid #30363d;
   border-radius: 6px;
   cursor: pointer;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.visibility-option:hover {
+  border-color: #8b949e;
+  background-color: #161b22;
 }
 
 .visibility-option.active {
   border-color: #58a6ff;
-  background-color: rgba(88, 166, 255, 0.05);
+  background-color: rgba(88, 166, 255, 0.06);
 }
 
 .visibility-option input[type="radio"] {
-  display: none;
+  margin-top: 3px;
+  accent-color: #58a6ff;
+  cursor: pointer;
 }
 
-.visibility-option span {
-  font-weight: 500;
-  color: white;
-  margin-bottom: 4px;
+.visibility-icon {
+  font-size: 20px;
+  line-height: 1;
 }
 
-.visibility-option small {
+.visibility-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.visibility-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f6fc;
+}
+
+.visibility-desc {
+  font-size: 13px;
   color: #8b949e;
-  font-size: 12px;
 }
+
+.form-actions {
+  padding-top: 12px;
+  border-top: 1px solid #30363d;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.create-repo-btn {
+  padding: 10px 20px;
+  background-color: #238636;
+  color: #ffffff;
+  border: 1px solid rgba(240, 246, 252, 0.1);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.create-repo-btn:hover:not(:disabled) {
+  background-color: #2ea043;
+}
+
+.create-repo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #238636;
+}
+

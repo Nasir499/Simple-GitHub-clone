@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import API from '../../api.js';
 import { useNavigate } from 'react-router-dom';
-import { PageHeader } from '@primer/react/experimental';
-import { Box, Button } from '@primer/react';
 import Navbar from '../Navbar';
 import './createRepository.css';
 
@@ -36,36 +34,50 @@ const CreateRepository = () => {
   };
 
   return (
-    <>
+    <div className="create-repo-page">
       <Navbar />
       <div className="create-repo-wrapper">
-        <div className="create-repo-heading">
-          <Box sx={{ padding: 1 }}>
-            <PageHeader>
-              <PageHeader.TitleArea variant="large">
-                <PageHeader.Title>Create a new repository</PageHeader.Title>
-              </PageHeader.TitleArea>
-            </PageHeader>
-          </Box>
+        <div className="create-repo-header">
+          <h2>Create a new repository</h2>
+          <p className="create-repo-subtext">
+            A repository contains all project files, including the revision history.
+          </p>
         </div>
 
         <form className="create-repo-form" onSubmit={handleCreate}>
-          <div>
-            <label className="label">Repository name *</label>
+          {error && (
+            <div className="form-error-banner">
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="form-group">
+            <label htmlFor="repo-name" className="form-label">
+              Repository name <span className="required-star">*</span>
+            </label>
             <input
-              className="input"
+              id="repo-name"
+              className="form-input"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="my-awesome-project"
+              placeholder="e.g. my-awesome-project"
+              autoComplete="off"
             />
+            <p className="form-hint">
+              Great repository names are short and memorable.
+            </p>
           </div>
 
-          <div>
-            <label className="label">Description (optional)</label>
+          <div className="form-group">
+            <label htmlFor="repo-desc" className="form-label">
+              Description <span className="optional-tag">(optional)</span>
+            </label>
             <input
-              className="input"
+              id="repo-desc"
+              className="form-input"
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -73,46 +85,59 @@ const CreateRepository = () => {
             />
           </div>
 
-          <div className="visibility-toggle">
-            <label className="label">Visibility</label>
+          <div className="form-group visibility-section">
+            <label className="form-label">Visibility</label>
             <div className="visibility-options">
-              <label className={`visibility-option ${visibility ? 'active' : ''}`}>
+              <div
+                className={`visibility-option ${visibility ? 'active' : ''}`}
+                onClick={() => setVisibility(true)}
+              >
                 <input
                   type="radio"
                   name="visibility"
                   checked={visibility === true}
                   onChange={() => setVisibility(true)}
                 />
-                <span>🌐 Public</span>
-                <small>Anyone can see this repository</small>
-              </label>
-              <label className={`visibility-option ${!visibility ? 'active' : ''}`}>
+                <div className="visibility-icon">🌐</div>
+                <div className="visibility-info">
+                  <div className="visibility-title">Public</div>
+                  <div className="visibility-desc">Anyone on the internet can see this repository.</div>
+                </div>
+              </div>
+
+              <div
+                className={`visibility-option ${!visibility ? 'active' : ''}`}
+                onClick={() => setVisibility(false)}
+              >
                 <input
                   type="radio"
                   name="visibility"
                   checked={visibility === false}
                   onChange={() => setVisibility(false)}
                 />
-                <span>🔒 Private</span>
-                <small>Only you can see this repository</small>
-              </label>
+                <div className="visibility-icon">🔒</div>
+                <div className="visibility-info">
+                  <div className="visibility-title">Private</div>
+                  <div className="visibility-desc">Only you can see and commit to this repository.</div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {error && <p style={{ color: '#f85149', fontSize: '14px', margin: 0 }}>{error}</p>}
-
-          <Button
-            type="submit"
-            variant="primary"
-            className="login-btn"
-            disabled={loading}
-          >
-            {loading ? 'Creating...' : 'Create Repository'}
-          </Button>
+          <div className="form-actions">
+            <button
+              type="submit"
+              className="create-repo-btn"
+              disabled={loading || !name.trim()}
+            >
+              {loading ? 'Creating Repository...' : 'Create repository'}
+            </button>
+          </div>
         </form>
       </div>
-    </>
+    </div>
   );
 };
 
 export default CreateRepository;
+
