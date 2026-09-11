@@ -21,21 +21,24 @@ async function pushRepo() {
     let token = null;
     let apiUrl = process.env.API_URL || "https://github-clone-backend-mt2h.onrender.com";
 
+    // 1. Try reading global credentials first for fresh token
+    const globalCredPath = path.join(process.env.USERPROFILE || process.env.HOME || '', '.mygit', 'credentials.json');
+    try {
+      const credData = JSON.parse(await fs.readFile(globalCredPath, 'utf-8'));
+      if (credData.token) token = credData.token;
+    } catch {}
+
+    // 2. Read local repo config
     try {
       const configData = JSON.parse(await fs.readFile(configPath, 'utf-8'));
       repoId = configData.repoId || null;
-      token = configData.token || null;
+      if (!token && configData.token) token = configData.token;
       if (configData.apiUrl) apiUrl = configData.apiUrl;
-    } catch {
-      // Config file missing or invalid
-    }
+    } catch {}
 
     if (!token) {
-      const globalCredPath = path.join(process.env.USERPROFILE || process.env.HOME || '', '.mygit', 'credentials.json');
-      try {
-        const credData = JSON.parse(await fs.readFile(globalCredPath, 'utf-8'));
-        token = credData.token;
-      } catch {}
+      console.error('Error: Authentication token missing or expired. Please run "mygit login <username> <password>" first.');
+      return;
     }
 
     if (!repoId) {
@@ -61,25 +64,25 @@ async function pushRepo() {
 
     console.log(`Found ${newCommits.length} un-pushed commit(s). Uploading to backend server...\n`);
 
+    const BATCH_SIZE = 20;
+
     for (const commitDir of newCommits) {
       const commitPath = path.join(commitsPath, commitDir);
       const relativeFiles = await listFilesRecursive(commitPath, commitPath);
 
-      const filePayloads = [];
-      let processed = 0;
-      const totalFiles = relativeFiles.length;
-
-      renderProgressBar(0, totalFiles, 'Starting...');
-
+      const allPayloads = [];
       for (const relFile of relativeFiles) {
         const fullPath = path.join(commitPath, relFile);
-        const content = await fs.readFile(fullPath, 'utf-8');
-        filePayloads.push({
+        let content = '';
+        try {
+          content = await fs.readFile(fullPath, 'utf-8');
+        } catch {
+          content = '';
+        }
+        allPayloads.push({
           path: relFile,
           content
         });
-        processed++;
-        renderProgressBar(processed, totalFiles, relFile);
       }
 
       // Read commit metadata message if available
@@ -90,13 +93,24 @@ async function pushRepo() {
         commitMessage = metaData.message || commitMessage;
       } catch {}
 
-      try {
-        await pushCommits(apiUrl, repoId, token, commitDir, commitMessage, filePayloads);
-        pushedCommits.push(commitDir);
-      } catch (err) {
-        console.error(`\n❌ Push failed for commit ${commitDir}: ${err.message}`);
-        process.exit(1);
+      const totalFiles = allPayloads.length;
+      renderProgressBar(0, totalFiles, 'Starting batch upload...');
+
+      // Push files in batches of BATCH_SIZE to avoid HTTP payload size / timeout limits
+      for (let i = 0; i < totalFiles; i += BATCH_SIZE) {
+        const batchPayload = allPayloads.slice(i, i + BATCH_SIZE);
+        const lastFileInBatch = batchPayload[batchPayload.length - 1]?.path || '';
+
+        try {
+          await pushCommits(apiUrl, repoId, token, commitDir, commitMessage, batchPayload);
+          renderProgressBar(Math.min(i + BATCH_SIZE, totalFiles), totalFiles, lastFileInBatch);
+        } catch (err) {
+          console.error(`\n❌ Push failed for commit ${commitDir}: ${err.message}`);
+          process.exit(1);
+        }
       }
+
+      pushedCommits.push(commitDir);
     }
 
     await fs.writeFile(pushTrackPath, JSON.stringify({ pushed: pushedCommits }, null, 2));

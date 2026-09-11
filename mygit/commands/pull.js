@@ -19,20 +19,20 @@ async function pullRepo() {
     let token = null;
     let apiUrl = process.env.API_URL || "https://github-clone-backend-mt2h.onrender.com";
 
+    // 1. Try global credentials first for fresh token
+    const globalCredPath = path.join(process.env.USERPROFILE || process.env.HOME || '', '.mygit', 'credentials.json');
+    try {
+      const credData = JSON.parse(await fs.readFile(globalCredPath, 'utf-8'));
+      if (credData.token) token = credData.token;
+    } catch {}
+
+    // 2. Read local repo config
     try {
       const configData = JSON.parse(await fs.readFile(configPath, 'utf-8'));
       repoId = configData.repoId || null;
-      token = configData.token || null;
+      if (!token && configData.token) token = configData.token;
       if (configData.apiUrl) apiUrl = configData.apiUrl;
     } catch {}
-
-    if (!token) {
-      const globalCredPath = path.join(process.env.USERPROFILE || process.env.HOME || '', '.mygit', 'credentials.json');
-      try {
-        const credData = JSON.parse(await fs.readFile(globalCredPath, 'utf-8'));
-        token = credData.token;
-      } catch {}
-    }
 
     if (!repoId) {
       console.error('Error: No repository ID configured.');

@@ -16,7 +16,8 @@ const authorizeOwner = (paramName = 'id') => {
                 return res.status(404).json({ message: 'Repository not found.' });
             }
 
-            if (repository.owner.toString() !== userId.toString()) {
+            const ownerId = repository.owner?._id ? repository.owner._id.toString() : repository.owner ? repository.owner.toString() : null;
+            if (!ownerId || ownerId !== userId.toString()) {
                 return res.status(403).json({ message: 'Access denied. You do not own this resource.' });
             }
 
