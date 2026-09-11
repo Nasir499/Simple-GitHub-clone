@@ -50,6 +50,13 @@ const updateRepository = async (req, res) => {
             return res.status(404).json({ message: "Repository not found" });
         }
 
+        if (req.user) {
+            const ownerId = repository.owner?._id ? repository.owner._id.toString() : repository.owner ? repository.owner.toString() : null;
+            if (!ownerId || ownerId !== req.user.toString()) {
+                return res.status(403).json({ message: "Access denied. You do not own this repository." });
+            }
+        }
+
         if (content) repository.content.push(content);
         if (description !== undefined) repository.description = description;
 
@@ -72,6 +79,13 @@ const deleteRepository = async (req, res) => {
         const repository = await Repository.findById(id);
         if (!repository) {
             return res.status(404).json({ message: "Repository not found" });
+        }
+
+        if (req.user) {
+            const ownerId = repository.owner?._id ? repository.owner._id.toString() : repository.owner ? repository.owner.toString() : null;
+            if (!ownerId || ownerId !== req.user.toString()) {
+                return res.status(403).json({ message: "Access denied. You do not own this repository." });
+            }
         }
 
         await Issue.deleteMany({ repository: id });
@@ -354,6 +368,14 @@ const pushRepoFiles = async (req, res) => {
         const repository = await Repository.findById(repoId);
         if (!repository) {
             return res.status(404).json({ message: "Repository not found" });
+        }
+
+        // Defense-in-depth owner check: ensure authenticated user owns this repository
+        if (req.user) {
+            const ownerId = repository.owner?._id ? repository.owner._id.toString() : repository.owner ? repository.owner.toString() : null;
+            if (!ownerId || ownerId !== req.user.toString()) {
+                return res.status(403).json({ message: "Access denied. You do not own this repository." });
+            }
         }
 
         const commitId = providedCommitId || uuidv4();
