@@ -18,8 +18,9 @@ const authorizeIssueAuthor = (paramName = 'id') => {
 
             const repository = await Repository.findById(issue.repository);
 
+            const repoOwnerId = repository?.owner?._id ? repository.owner._id.toString() : repository?.owner ? repository.owner.toString() : null;
             const isAuthor = issue.author && issue.author.toString() === userId.toString();
-            const isRepoOwner = repository && repository.owner.toString() === userId.toString();
+            const isRepoOwner = repoOwnerId && repoOwnerId === userId.toString();
 
             if (!isAuthor && !isRepoOwner) {
                 return res.status(403).json({ message: 'Access denied. You are not authorized to modify this issue.' });

@@ -258,6 +258,8 @@ const fetchRepositoryS3Files = async (req, res) => {
                 return res.status(404).json({ message: "Repository not found" });
             }
             try {
+                const token = authHeader.split(' ')[1];
+                const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
                 const ownerId = repository.owner?._id ? repository.owner._id.toString() : repository.owner?.toString();
                 if (!ownerId || ownerId !== decoded.id) {
                     return res.status(404).json({ message: "Repository not found" });
@@ -324,6 +326,7 @@ const fetchS3FileContent = async (req, res) => {
                 }
                 try {
                     const token = authHeader.split(' ')[1];
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
                     const ownerId = repository.owner?._id ? repository.owner._id.toString() : repository.owner?.toString();
                     if (!ownerId || ownerId !== decoded.id) {
                         return res.status(403).json({ message: "Access denied" });
