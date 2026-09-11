@@ -8,10 +8,17 @@ import { pushRepo } from './commands/push.js';
 import { pullRepo } from './commands/pull.js';
 import { revertRepo } from './commands/revert.js';
 import { loginRepo } from './commands/login.js';
+import { cleanRepo } from './commands/clean.js';
 
 yargs(hideBin(process.argv))
   .scriptName('mygit')
   .usage('$0 <command> [args]')
+  .command(
+    'clean',
+    'Discard all staged files, unwanted folders, and un-pushed commits',
+    {},
+    cleanRepo
+  )
   .command(
     'login <username> <password>',
     'Log in to your account and save global credentials',

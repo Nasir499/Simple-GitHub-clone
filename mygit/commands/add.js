@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { loadIgnorePatterns, isIgnored } from '../utils/ignore.js';
 
 async function addRepo(filePath) {
   const repoPath = path.resolve(process.cwd(), ".mygit");
@@ -7,55 +8,75 @@ async function addRepo(filePath) {
 
   try {
     await fs.mkdir(stagingPath, { recursive: true });
+    const rootPath = process.cwd();
+    const ignorePatterns = await loadIgnorePatterns(rootPath);
+
+    let stagedCount = 0;
 
     if (filePath === '.') {
-      // Stage all files in the current directory recursively
-      await stageDirectory(process.cwd(), process.cwd(), stagingPath);
-      console.log('All files added to staging area successfully');
+      stagedCount = await stageDirectory(rootPath, rootPath, stagingPath, ignorePatterns);
+      console.log(`\n✅ Added ${stagedCount} file(s) to staging area (automatically discarded node_modules, build artifacts & .gitignore files).`);
     } else {
-      const absolutePath = path.resolve(process.cwd(), filePath);
+      const absolutePath = path.resolve(rootPath, filePath);
+      const relativePath = path.relative(rootPath, absolutePath);
+      const name = path.basename(absolutePath);
       const stat = await fs.stat(absolutePath);
 
       if (stat.isDirectory()) {
-        await stageDirectory(absolutePath, process.cwd(), stagingPath);
-        console.log(`Directory ${filePath} added to staging area successfully`);
+        if (isIgnored(name, relativePath, true, ignorePatterns)) {
+          console.log(`\n⚠️ Directory "${filePath}" is in ignore rules and was skipped.`);
+          return;
+        }
+        stagedCount = await stageDirectory(absolutePath, rootPath, stagingPath, ignorePatterns);
+        console.log(`\n✅ Added ${stagedCount} file(s) from directory "${filePath}" to staging area.`);
       } else {
-        // Preserve relative path structure in staging
-        const relativePath = path.relative(process.cwd(), absolutePath);
+        if (isIgnored(name, relativePath, false, ignorePatterns)) {
+          console.log(`\n⚠️ File "${filePath}" is in ignore rules and was skipped.`);
+          return;
+        }
         const destPath = path.join(stagingPath, relativePath);
         await fs.mkdir(path.dirname(destPath), { recursive: true });
         await fs.copyFile(absolutePath, destPath);
-        console.log(`File ${filePath} added to staging area successfully`);
+        stagedCount = 1;
+        console.log(`\n✅ File "${filePath}" added to staging area successfully.`);
       }
     }
 
     // Update index file with staged files list
     await updateIndex(stagingPath, repoPath);
   } catch (error) {
-    console.error('ERROR!! Adding File', error);
+    console.error('ERROR!! Adding File:', error);
   }
 }
 
-async function stageDirectory(dirPath, rootPath, stagingPath) {
-  const entries = await fs.readdir(dirPath, { withFileTypes: true });
+async function stageDirectory(dirPath, rootPath, stagingPath, ignorePatterns) {
+  let count = 0;
+  let entries = [];
+  try {
+    entries = await fs.readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return 0;
+  }
 
   for (const entry of entries) {
     const fullPath = path.join(dirPath, entry.name);
+    const relativePath = path.relative(rootPath, fullPath);
 
-    // Skip .mygit directory and node_modules
-    if (entry.name === '.mygit' || entry.name === 'node_modules' || entry.name === '.git') {
+    if (isIgnored(entry.name, relativePath, entry.isDirectory(), ignorePatterns)) {
       continue;
     }
 
     if (entry.isDirectory()) {
-      await stageDirectory(fullPath, rootPath, stagingPath);
+      count += await stageDirectory(fullPath, rootPath, stagingPath, ignorePatterns);
     } else {
-      const relativePath = path.relative(rootPath, fullPath);
       const destPath = path.join(stagingPath, relativePath);
       await fs.mkdir(path.dirname(destPath), { recursive: true });
       await fs.copyFile(fullPath, destPath);
+      count++;
     }
   }
+
+  return count;
 }
 
 async function updateIndex(stagingPath, repoPath) {
@@ -67,7 +88,12 @@ async function updateIndex(stagingPath, repoPath) {
 }
 
 async function listFilesRecursive(dirPath, basePath) {
-  const entries = await fs.readdir(dirPath, { withFileTypes: true });
+  let entries = [];
+  try {
+    entries = await fs.readdir(dirPath, { withFileTypes: true });
+  } catch {
+    return [];
+  }
   let files = [];
 
   for (const entry of entries) {
