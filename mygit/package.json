@@ -1,6 +1,6 @@
 {
   "name": "@nasir499/mygit",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Independent CLI client for GitHub Clone repository management",
   "main": "cli.js",
   "type": "module",
