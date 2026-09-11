@@ -10,6 +10,11 @@ const createIssue = async (req, res) => {
             return res.status(400).json({ message: "Issue title is required" });
         }
 
+        const repository = await Repository.findById(repoId);
+        if (!repository) {
+            return res.status(404).json({ message: "Repository not found" });
+        }
+
         const issue = new Issue({
             title,
             description,

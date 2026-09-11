@@ -25,7 +25,7 @@ const Login = () => {
     try {
       setLoading(true);
       const res = await API.post("/login", {
-        username,
+        username: username.trim(),
         password,
       });
 

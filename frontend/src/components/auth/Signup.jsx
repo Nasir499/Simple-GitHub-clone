@@ -22,9 +22,9 @@ const Signup = () => {
     try {
       setLoading(true);
       const res = await API.post("/signup", {
-        email,
+        email: email.trim(),
+        username: username.trim(),
         password,
-        username,
       });
 
       login(res.data.token, res.data.userId);
