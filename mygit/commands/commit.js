@@ -7,6 +7,7 @@ async function commitRepo(message) {
   const stagingPath = path.join(repoPath, "staging");
   const commitsPath = path.join(repoPath, "commits");
   const headPath = path.join(repoPath, "HEAD");
+  const indexPath = path.join(repoPath, "index.json");
 
   try {
     // Check if staging area has files
@@ -14,7 +15,7 @@ async function commitRepo(message) {
     try {
       stagedFiles = await fs.readdir(stagingPath);
     } catch {
-      console.error('Nothing to commit. Run "add" first to stage files.');
+      console.error('Nothing to commit. Run "mygit add ." first to stage files.');
       return;
     }
 
@@ -44,7 +45,7 @@ async function commitRepo(message) {
       path.join(commitDir, 'commit.json'),
       JSON.stringify({
         id: commitId,
-        message,
+        message: message || "CLI Commit",
         date: new Date().toISOString(),
         parent: parentCommit
       }, null, 2)
@@ -56,9 +57,13 @@ async function commitRepo(message) {
       JSON.stringify({ current: commitId, branch: "main" }, null, 2)
     );
 
-    // Clear staging area
+    // Clear staging area and index file
     await fs.rm(stagingPath, { recursive: true, force: true });
     await fs.mkdir(stagingPath, { recursive: true });
+    await fs.writeFile(
+      indexPath,
+      JSON.stringify({ staged: [], updatedAt: new Date().toISOString() }, null, 2)
+    );
 
     console.log(`Changes committed with ID: ${commitId}`);
   } catch (error) {

@@ -54,7 +54,18 @@ async function pushRepo() {
       // No push tracking file yet
     }
 
-    const commitDirs = await fs.readdir(commitsPath);
+    // Filter to only include valid commit directories
+    const allDirs = await fs.readdir(commitsPath);
+    const commitDirs = [];
+    for (const d of allDirs) {
+      try {
+        const stat = await fs.stat(path.join(commitsPath, d));
+        if (stat.isDirectory()) {
+          commitDirs.push(d);
+        }
+      } catch {}
+    }
+
     const newCommits = commitDirs.filter(dir => !pushedCommits.includes(dir));
 
     if (newCommits.length === 0) {
@@ -72,6 +83,10 @@ async function pushRepo() {
 
       const allPayloads = [];
       for (const relFile of relativeFiles) {
+        // Skip metadata file commit.json from file payloads
+        const cleanRel = relFile.replace(/\\/g, '/');
+        if (cleanRel === 'commit.json' || cleanRel.endsWith('/commit.json')) continue;
+
         const fullPath = path.join(commitPath, relFile);
         let content = '';
         try {
@@ -80,7 +95,7 @@ async function pushRepo() {
           content = '';
         }
         allPayloads.push({
-          path: relFile,
+          path: cleanRel,
           content
         });
       }
@@ -94,6 +109,12 @@ async function pushRepo() {
       } catch {}
 
       const totalFiles = allPayloads.length;
+
+      if (totalFiles === 0) {
+        pushedCommits.push(commitDir);
+        continue;
+      }
+
       renderProgressBar(0, totalFiles, 'Starting batch upload...');
 
       // Push files in batches of BATCH_SIZE to avoid HTTP payload size / timeout limits

@@ -384,6 +384,7 @@ const pushRepoFiles = async (req, res) => {
                 if (!relativePath) return;
 
                 const cleanPath = relativePath.replace(/\\/g, '/');
+                if (cleanPath === 'commit.json' || cleanPath.endsWith('/commit.json')) return;
                 const s3Key = `repos/${repoId}/commits/${commitId}/${cleanPath}`;
                 await s3.send(new PutObjectCommand({
                     Bucket: S3_BUCKET,
