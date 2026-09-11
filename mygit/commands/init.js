@@ -11,7 +11,7 @@ async function initRepo(repoId) {
     await fs.mkdir(commitsPath, { recursive: true });
     await fs.mkdir(stagingPath, { recursive: true });
 
-    const apiUrl = process.env.API_URL || "http://localhost:3000";
+    const apiUrl = process.env.API_URL || "https://github-clone-backend-mt2h.onrender.com";
 
     const configData = {
       apiUrl

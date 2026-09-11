@@ -17,7 +17,7 @@ async function pullRepo() {
 
     let repoId = null;
     let token = null;
-    let apiUrl = process.env.API_URL || "http://localhost:3000";
+    let apiUrl = process.env.API_URL || "https://github-clone-backend-mt2h.onrender.com";
 
     try {
       const configData = JSON.parse(await fs.readFile(configPath, 'utf-8'));

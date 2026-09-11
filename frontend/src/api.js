@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+    baseURL: import.meta.env.VITE_API_URL || 'https://github-clone-backend-mt2h.onrender.com',
 });
 
 // Attach auth token to every request

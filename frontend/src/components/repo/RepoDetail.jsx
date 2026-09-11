@@ -173,7 +173,7 @@ function RepoDetail() {
 
   const folderParts = currentFolder ? currentFolder.split('/') : [];
 
-  const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const apiBaseUrl = import.meta.env.VITE_API_URL || 'https://github-clone-backend-mt2h.onrender.com';
 
   return (
     <div className="repo-page">
