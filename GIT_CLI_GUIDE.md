@@ -4,15 +4,16 @@ A step-by-step guide on how to configure and use the custom version control CLI 
 
 ---
 
-## ⚡ 1. Global Installation (Recommended)
+## ⚡ 1. Global Installation & Login (Recommended)
 
-You can install `mygit` globally using npm:
+You can install `mygit` globally using npm and log in to your account:
 
 ```bash
 npm install -g @nasir499/mygit
+mygit login <username> <password>
 ```
 
-🎉 **Done!** You can now use `mygit` as a command from any terminal window on your machine.
+🎉 **Done!** Your computer is now authenticated. You can use `mygit` from any terminal window on your machine.
 
 ---
 

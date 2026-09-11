@@ -217,6 +217,7 @@ function RepoDetail() {
                 <h5>Install mygit CLI & log in to your account (Run once per computer)</h5>
                 <div className="cli-code-block">
                   <code>npm install -g @nasir499/mygit</code>
+                  <code>mygit login &lt;username&gt; &lt;password&gt;</code>
                 </div>
               </div>
             </div>
