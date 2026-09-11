@@ -1,41 +1,79 @@
-# 🐙 GitHub Clone — Full-Stack Web App & Custom Git CLI (`mygit`)
+# 🐙 GitHub Clone & `mygit` CLI
 
-A full-stack GitHub clone built with **React**, **Node.js/Express**, **MongoDB**, and **AWS S3**, featuring a custom command-line interface (`mygit`) that allows users to initialize, commit, and push code directly to AWS S3 from any local project directory.
-
----
-
-## ✨ Features
-
-### 🌐 Web Application (Frontend)
-- **User Authentication**: JWT-based login and signup with protected routes.
-- **Repository Management**: Create public/private repositories, toggle visibility, and delete repositories with cascade cleanup.
-- **S3 File Explorer**: Interactive file tree with breadcrumb navigation and **automatic Windows path normalization** (`\` ➔ `/`).
-- **Live Code Viewer**: View file contents directly in an inline code modal fetched directly from S3.
-- **Issue Tracking System**: Create, inspect, and manage repository issues (`open` / `closed`).
-- **Optimized UI Data Fetching**: Clean single-fetch component lifecycle with manual refresh capability.
-
-### 💻 Backend & Storage
-- **RESTful API Engine**: Express server powering repository management, authorization middleware, and file sync.
-- **AWS S3 Cloud Storage**: Preserves commit histories and repository file structures under `repos/<repoId>/commits/<commitId>/`.
-- **High-Performance Upload Pipeline**: Supports body payloads up to **50MB** and **parallel chunked S3 uploads** (15 concurrent threads), reducing upload times for 80+ files from ~35s down to ~1.5s.
-- **Cross-Platform Path Sanitization**: Ensures Windows backslashes (`\`) are converted to standard POSIX slashes (`/`) before writing S3 keys and DB entries.
-- **Database Architecture**: MongoDB storing users, repository metadata, and issue collections.
-
-### ⚡ Custom Git CLI (`mygit`)
-- **One-Command Automated Installer**: Installs globally on Windows via PowerShell (`powershell -c "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm http://localhost:3000/install.ps1 | iex"`).
-- **Command Set**:
-  - `mygit init <repoId>` — Initializes local repository tracking linked to a specific web repository.
-  - `mygit add <file|.>` — Stages individual files or entire directory trees recursively into `.mygit/staging/`.
-  - `mygit commit "<message>"` — Creates a commit snapshot with metadata (`commit.json`).
-  - `mygit push` — Uploads un-pushed commits and staged files directly to AWS S3 via Express API.
-  - `mygit pull` — Fetches remote commit snapshots from S3 to local storage.
-  - `mygit revert <commitId>` — Reverts working directory to a specific commit snapshot.
+A full-stack GitHub clone built with **React**, **Node.js/Express**, **MongoDB**, and **AWS S3**, featuring a standalone custom command-line client (`mygit`) that communicates with the backend API to initialize repositories, stage files, take commit snapshots, and push code directly to AWS S3.
 
 ---
 
-## 🚀 Quick Start Guide
+## 🏗️ Project Architecture
 
-### 1. Backend Setup
+The project is structured into two separate applications:
+
+```
+┌───────────────────────────────────────────┐
+│                 mygit                     │
+│            Independent CLI                │
+│                                           │
+│   mygit init / add / commit / push        │
+└─────────────────────┬─────────────────────┘
+                      │
+                      │ HTTP API (JSON)
+                      ▼
+┌───────────────────────────────────────────┐
+│                 backend                   │
+│           Express Server API              │
+│                                           │
+│  routes / controllers / services / models │
+└──────────────┬─────────────────┬──────────┘
+               │                 │
+               ▼                 ▼
+     ┌──────────────────┐  ┌───────────┐
+     │ MongoDB Database │  │  AWS S3   │
+     └──────────────────┘  └───────────┘
+```
+
+- **`mygit` CLI Package**: A lightweight, standalone Node.js client package. Handles local repository tracking inside `.mygit/`, directory staging, commit snapshot metadata, and sends code uploads over HTTP to the backend API.
+- **Backend Application**: Express REST API server. Handles user authentication, repository metadata in MongoDB, authorization checks, and object storage management on AWS S3.
+- **Frontend Application**: React web dashboard for browsing repositories, viewing commits, and inspecting source files.
+
+---
+
+## 📁 Repository Structure
+
+```text
+Simple-GitHub-clone/
+│
+├── backend/
+│   ├── config/          # AWS S3 & server configurations
+│   ├── controllers/     # API controllers (repo, user, issue)
+│   ├── middlewares/     # Auth & authorization middlewares
+│   ├── models/          # MongoDB Mongoose schemas
+│   ├── routes/          # Express API route declarations
+│   ├── index.js         # Express HTTP server entrypoint
+│   └── package.json
+│
+├── mygit/               # Independent CLI package
+│   ├── api/             # HTTP API client layer (repoApi.js)
+│   ├── commands/        # CLI command implementations
+│   │   ├── init.js
+│   │   ├── add.js
+│   │   ├── commit.js
+│   │   ├── push.js
+│   │   ├── pull.js
+│   │   └── revert.js
+│   ├── utils/           # Terminal UI progress bar & helpers
+│   ├── cli.js           # CLI entrypoint executable (yargs)
+│   └── package.json     # CLI package configuration & bin definition
+│
+├── frontend/            # React web application dashboard
+│
+└── README.md
+```
+
+---
+
+## 🚀 Quick Start & Setup
+
+### 1. Start the Backend Server
 
 ```bash
 # Navigate to backend folder
@@ -44,96 +82,81 @@ cd backend
 # Install dependencies
 npm install
 
-# Configure environment variables in backend/.env
-# Example .env:
-# MONGODB_URI=mongodb://localhost:27017/Github
-# PORT=3000
-# JWT_SECRET_KEY=your_secret_key
-# S3_BUCKET=your_s3_bucket_name
-# AWS_REGION=ap-south-1
-# AWS_ACCESS_KEY_ID=your_access_key
-# AWS_SECRET_ACCESS_KEY=your_secret_key
-
-# Start the Express server (Runs on http://localhost:3000)
+# Start the Express API server (Runs on http://localhost:3000)
 npm start
 ```
 
-### 2. Frontend Setup
+### 2. Install `mygit` CLI
+
+To install `mygit` globally on your computer via npm:
 
 ```bash
-# Navigate to frontend folder
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start Vite development server (Runs on http://localhost:5173)
-npm run dev
+npm install -g @nasir499/mygit
 ```
+
+Or for local development from source:
+
+```bash
+cd mygit
+npm install
+npm link
+```
+
+*Now `mygit` can be invoked from any terminal window on your system.*
 
 ---
 
-## 💻 Installing & Using `mygit` CLI
+## 💻 Using `mygit` CLI
 
-### Step 1: One-Click CLI Installation (Windows PowerShell)
+Open a terminal inside any local project directory (e.g. `D:\MyProject`) and run:
 
-Run the following command in PowerShell:
-
-```powershell
-powershell -c "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm http://localhost:3000/install.ps1 | iex"
-```
-
-### Step 2: Initialize & Push Code from Any Local Project
-
-Open a terminal in your local project directory (e.g., `D:\MyProject`) and run:
-
-```powershell
-# 1. Initialize local repository with Repository ID from web app URL
+```bash
+# 1. Initialize local repository linked to your Web Repository ID
 mygit init <repoId>
 
-# 2. Stage files
+# 2. Stage files into .mygit/staging/
 mygit add .
 
-# 3. Commit staged files
-mygit commit "Initial upload of project source code"
+# 3. Create a local commit snapshot in .mygit/commits/
+mygit commit "Initial commit"
 
-# 4. Push files to AWS S3
+# 4. Push commits to AWS S3 via backend HTTP API
 mygit push
 ```
 
----
+### Command Reference
 
-## 🛠️ Tech Stack
-
-| Layer | Technology |
+| Command | Description |
 |---|---|
-| **Frontend** | React, Vite, React Router DOM, Axios, CSS3 |
-| **Backend** | Node.js, Express.js, Socket.io, Yargs, Morgan |
-| **Database** | MongoDB, Mongoose |
-| **Cloud Storage** | AWS S3 (`@aws-sdk/client-s3`) |
-| **Authentication** | JSON Web Tokens (JWT), Bcrypt.js |
+| `mygit init <repoId>` | Initializes local `.mygit/` tracking linked to backend repo ID `<repoId>`. |
+| `mygit add <file\|.>` | Stages individual files or directory trees into `.mygit/staging/`. |
+| `mygit commit "<msg>"` | Takes a local snapshot of staged files in `.mygit/commits/<commitId>/`. |
+| `mygit push` | Sends un-pushed commit files over HTTP API to the backend server. |
+| `mygit pull` | Fetches remote repository files from backend server. |
+| `mygit revert <commitId>` | Restores working directory to a specific commit snapshot. |
 
 ---
 
-## 📁 Repository Structure
+## 🔄 Complete Request Flow (`mygit push`)
 
-```text
-├── backend/
-│   ├── config/          # AWS S3 configuration
-│   ├── controllers/     # Route controllers & CLI commands (init, add, commit, push, pull, revert)
-│   ├── middlewares/     # JWT authentication & authorization middlewares
-│   ├── models/          # MongoDB schemas (User, Repository, Issue)
-│   ├── routes/          # Express API routes & installer endpoints
-│   ├── index.js         # Express server & CLI entry point
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   │   ├── components/  # React components (Dashboard, RepoDetail, CreateRepository, Navbar, Auth)
-│   │   ├── Authcontext.jsx # Auth state provider
-│   │   ├── api.js       # Axios API client
-│   │   └── App.jsx
-│   └── package.json
-│
-└── GIT_CLI_GUIDE.md     # Detailed CLI documentation
+```
+User types: mygit push
+      │
+      ▼
+mygit CLI (mygit/cli.js)
+      │
+      ▼
+push command handler (mygit/commands/push.js)
+      │
+      ▼
+HTTP API Client (mygit/api/repoApi.js)
+      │
+      ▼ (POST /repo/:id/push)
+Backend Route (backend/routes/repo.route.js)
+      │
+      ▼
+Repo Controller (backend/controllers/repo.controller.js -> pushRepoFiles)
+      │
+      ▼
+MongoDB & AWS S3 Storage (saves commit metadata in DB, uploads files to S3)
 ```

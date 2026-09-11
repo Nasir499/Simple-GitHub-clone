@@ -216,8 +216,7 @@ function RepoDetail() {
               <div className="step-content">
                 <h5>Install mygit CLI & log in to your account (Run once per computer)</h5>
                 <div className="cli-code-block">
-                  <code>[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm {apiBaseUrl}/install.ps1 | iex</code>
-                  <code>mygit login</code>
+                  <code>npm install -g @nasir499/mygit</code>
                 </div>
               </div>
             </div>

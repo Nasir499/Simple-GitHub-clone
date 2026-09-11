@@ -4,12 +4,12 @@ A step-by-step guide on how to configure and use the custom version control CLI 
 
 ---
 
-## ⚡ 1. One-Click System Installation (Recommended)
+## ⚡ 1. Global Installation (Recommended)
 
-You can install `mygit` globally on Windows with a single PowerShell command:
+You can install `mygit` globally using npm:
 
-```powershell
-powershell -c "irm http://localhost:3000/install.ps1 | iex"
+```bash
+npm install -g @nasir499/mygit
 ```
 
 🎉 **Done!** You can now use `mygit` as a command from any terminal window on your machine.

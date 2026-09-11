@@ -1,15 +1,12 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "GitHub Clone Backend & Version Control Engine",
+  "description": "GitHub Clone Backend Application",
   "main": "index.js",
   "type": "module",
-  "bin": {
-    "mygit": "./index.js"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js start"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -26,8 +23,7 @@
     "mongoose": "^8.18.2",
     "morgan": "^1.10.1",
     "socket.io": "^4.8.1",
-    "uuid": "^11.1.0",
-    "yargs": "^18.0.0"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

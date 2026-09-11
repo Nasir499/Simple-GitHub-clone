@@ -1,13 +1,5 @@
 import fs from "fs/promises";
 import path from "path";
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const backendEnvPath = path.resolve(__dirname, '../.env');
-
-dotenv.config({ path: backendEnvPath });
 
 async function initRepo(repoId) {
   const repoPath = path.resolve(process.cwd(), ".mygit");
@@ -19,8 +11,10 @@ async function initRepo(repoId) {
     await fs.mkdir(commitsPath, { recursive: true });
     await fs.mkdir(stagingPath, { recursive: true });
 
+    const apiUrl = process.env.API_URL || "http://localhost:3000";
+
     const configData = {
-      bucket: process.env.S3_BUCKET || "nasir499-github-clone"
+      apiUrl
     };
 
     if (repoId && typeof repoId === 'string') {
