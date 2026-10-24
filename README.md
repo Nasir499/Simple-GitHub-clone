@@ -164,9 +164,23 @@ MongoDB & AWS S3 Storage (saves commit metadata in DB, uploads files to S3)
 
 ---
 
-## 📊 Development Metrics & Performance Benchmarks
+## 🔐 Implementation Notes
 
-### ⚡ System Performance & Throughput
+The repository separates the CLI, API server, metadata storage, object storage, and browser UI. Before using it with real repositories, verify the following against your deployment configuration:
+
+- Configure MongoDB and AWS S3 credentials through environment variables; do not commit secrets.
+- Keep authentication tokens short-lived where practical and provide a revocation strategy for compromised sessions.
+- Enforce repository ownership checks on every read and write operation, including file downloads and commit history.
+- Add automated tests for staging, commit snapshots, push/pull behavior, path traversal, and partial upload failures.
+- Treat upload concurrency, request-size limits, and latency as deployment-specific values; benchmark them in the target environment rather than relying on fixed numbers in this README.
+
+## 🧪 Testing
+
+The current backend `package.json` does not define an automated test suite (`npm test` is a placeholder that exits with an error). Run the application manually during development and add a test suite before relying on these flows in production.
+
+`mygit` exposes its CLI through the `@nasir499/mygit` package. Confirm that the published package version matches your local source before installing globally.
+
+## ⚡ System Performance & Throughput
 
 | Metric | Measurement / Specification | Status | Description |
 |---|---|---|---|
